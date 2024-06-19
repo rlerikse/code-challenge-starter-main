@@ -1,18 +1,35 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { ProfileState, makeFakeUserList } from './profileUtils'
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { isArray } from 'lodash'
+import { isArray } from 'lodash';
 
-const initialState = {
-  profiles: [],
-  inFocus: null
-} as ProfileState;
-
-function returnFakeProfiles() {
-  const profiles = makeFakeUserList();
-  console.log('got some [fake] data', profiles);
-  return profiles;
+export interface Profile {
+  id: number;
+  first_name: string,
+  last_name: string;
+  username: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  photo: string;
+  notes: string;
 }
+
+interface ProfileState {
+  profiles: Profile[];
+  inFocus: Profile | null;
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  error: string | null;
+}
+
+const initialState: ProfileState = {
+  profiles: [],
+  inFocus: null,
+  status: 'idle',
+  error: null,
+};
 
 async function returnNetworkProfiles() {
   const profiles = await fetch("https://codechallenge.rivet.work/api/v1/profile/1", {
@@ -22,50 +39,50 @@ async function returnNetworkProfiles() {
   })
   .then((response) => response.json())
   .then((data) => {
-    // do something with the data
-    return data;
-  })
+    console.log('got some data', data);
+    return isArray(data) ? data : [data];
+  });
 
-  console.log('got some data', profiles);
-  if (isArray(profiles)) {
-    return profiles;
-  }
-  return [profiles]
+  return profiles;
 }
 
-
-export const fetchProfiles = createAsyncThunk('users/fetchUsers', () => {
-  // return returnFakeProfiles();
-  return returnNetworkProfiles();
-})
+export const fetchProfiles = createAsyncThunk('profiles/fetchProfiles', async () => {
+  // Now using returnNetworkProfiles to fetch real profiles
+  return await returnNetworkProfiles();
+});
 
 export const profileSlice = createSlice({
   name: 'profiles',
   initialState,
   reducers: {
-    setActiveProfile: (state, action) => {
+    setActiveProfile: (state, action: PayloadAction<number>) => {
       const id = action.payload;
-      console.log('should set active profile ID', action.payload);
-      
-      const found = state.profiles.find((item)=>item.id==id);
+      const found = state.profiles.find((item) => item.id === id);
       state.inFocus = found || null;
-      // state.settings.customTopics.topicsSortType.name = action.payload.name;   
     },
   },
-  extraReducers(builder) {
-    builder.addCase(fetchProfiles.fulfilled, (state, action) => {
-      return {
-        ...state,
-        profiles: action.payload
-      }
-    })
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchProfiles.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchProfiles.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        // Direct assignment of the payload to profiles is correct here
+        state.profiles = action.payload;
+      })
+      .addCase(fetchProfiles.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Failed to fetch profiles';
+      });
   }
-})
+});
 
-// Action creators are generated for each case reducer function
-export const { setActiveProfile } = profileSlice.actions
+export const { setActiveProfile } = profileSlice.actions;
 export const profileList = (state: RootState) => state.profile.profiles;
 export const countProfiles = (state: RootState) => state.profile.profiles.length as number;
 export const currentProfile = (state: RootState) => state.profile.inFocus;
+export const profileStatus = (state: RootState) => state.profile.status;
+export const profileError = (state: RootState) => state.profile.error;
 
-export default profileSlice.reducer
+export default profileSlice.reducer;
