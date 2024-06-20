@@ -1,33 +1,34 @@
+import React, { useState } from 'react';
 import { Box, Stack } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux";
 import { ProfileLineItem } from "./ProfileLineItem";
-import { profileList, setActiveProfile } from "./profileSlice";
+import { selectAllProfiles, setActiveProfile } from "./profileSlice";
+import ProfileShow from "./ProfileShow";
 
 const ProfileList = () => {
-  const profiles = useSelector(profileList)
+  const profiles = useSelector(selectAllProfiles);
+  console.log(profiles)
   const dispatch = useDispatch();
+  const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
 
-  function trySetProfile(data: number) {
-    dispatch(setActiveProfile(data));
-    alert(`Should view profile id: ${data}`)
-  }
+  const trySetProfile = (profileId: number) => {
+    setSelectedProfileId(profileId);
+    dispatch(setActiveProfile(profileId));
+  };
 
   return (
-    <Stack spacing={1} sx={{textAlign: 'left'}}>
-      { profiles.length > 0 && profiles.map((profile)=>(
-        <Box sx={{ backgroundColor: 'white', 
-                   borderRadius: '4px', 
-                   overflow: 'hidden', 
-                   boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, .1)',
-                   cursor: 'pointer'
-                  }} 
-             key={profile.id} 
-             onClick={()=>trySetProfile(profile.id)}>
-          <ProfileLineItem profile={profile} />
-        </Box>
-      ))}
+    <Stack spacing={1} sx={{ textAlign: 'left' }}>
+      {selectedProfileId ? (
+        <ProfileShow profileId={selectedProfileId} />
+      ) : (
+        profiles.length > 0 && profiles.map((profile) => (
+          <Box key={profile.id} onClick={() => trySetProfile(profile.id)} sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'lightgray' } }}>
+            <ProfileLineItem profile={profile} />
+          </Box>
+        ))
+      )}
     </Stack>
-  )
-}
+  );
+};
 
-export { ProfileList }
+export { ProfileList };
