@@ -40,15 +40,6 @@ export const fetchProfiles = createAsyncThunk('profiles/fetchProfiles', async (_
   return (await response.json()) as Profile[];
 });
 
-export const fetchProfileById = createAsyncThunk('profiles/fetchProfileById', async (id: string, thunkAPI) => {
-  const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile/${id}`, {
-    headers: {
-      "Authorization": `Bearer ${process.env.REACT_APP_API_TOKEN}`
-},
-  });
-  return (await response.json()) as Profile;
-});
-
 // Async thunk for loading a single profile
 export const fetchProfile = createAsyncThunk(
   'profiles/fetchProfile',
@@ -235,6 +226,8 @@ export const { setActiveProfile } = profileSlice.actions;
 export default profileSlice.reducer;
 
 // Define and export selectors to read values from the state
+export const profileList = (state: RootState) => state.profile.profiles;
+export const countProfiles = (state: RootState) => state.profile.profiles.length as number;
 export const selectAllProfiles = (state: RootState) => state.profile.profiles;
 export const currentProfile = (state: RootState) => state.profile.profiles.find(profile => profile.id === state.profile.activeProfileId);
 export const selectProfileStatus = (state: RootState) => state.profile.status;
