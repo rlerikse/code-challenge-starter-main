@@ -7,6 +7,7 @@ import ProfileShow from "./ProfileShow";
 
 const ProfileList = () => {
   const profiles = useSelector(selectAllProfiles);
+  console.log(profiles)
   const dispatch = useDispatch();
   const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
 
@@ -21,7 +22,7 @@ const ProfileList = () => {
         <ProfileShow profileId={selectedProfileId} />
       ) : (
         profiles.length > 0 && profiles.map((profile) => (
-          <Box key={profile.id} onClick={() => trySetProfile(profile.id)} sx={{ /* Styling here */ }}>
+          <Box key={profile.id} onClick={() => trySetProfile(profile.id)} sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'lightgray' } }}>
             <ProfileLineItem profile={profile} />
           </Box>
         ))
