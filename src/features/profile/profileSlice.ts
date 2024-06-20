@@ -34,7 +34,7 @@ const initialState: ProfileState = {
 export const fetchProfiles = createAsyncThunk('profiles/fetchProfiles', async (_, thunkAPI) => {
   const response = await fetch('https://codechallenge.rivet.work/api/v1/profiles', {
     headers: {
-          "Authorization": `Bearer ${process.env.REACT_APP_API_TOKEN}`
+      "token": process.env.REACT_APP_API_TOKEN || ''
     },
   });
   return (await response.json()) as Profile[];
@@ -47,8 +47,8 @@ export const fetchProfile = createAsyncThunk(
     try {
       const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile/${profileId}`, {
         headers: {
-          "Authorization": `Bearer ${process.env.REACT_APP_API_TOKEN}`
-        }
+          "token": process.env.REACT_APP_API_TOKEN || ''
+        },
       });
       if (!response.ok) throw new Error('Network response was not ok');
       return await response.json();
@@ -73,8 +73,7 @@ export const createProfile = createAsyncThunk(
       const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile`, {
         method: 'POST',
         headers: {
-          "Authorization": `Bearer ${process.env.REACT_APP_API_TOKEN}`,
-          "Content-Type": "application/json"
+          "token": process.env.REACT_APP_API_TOKEN || ''
         },
         body: JSON.stringify(profileData)
       });
@@ -101,8 +100,7 @@ export const updateProfile = createAsyncThunk(
       const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile/${profileId}`, {
         method: 'PUT',
         headers: {
-          "Authorization": `Bearer ${process.env.REACT_APP_API_TOKEN}`,
-          "Content-Type": "application/json"
+          "token": process.env.REACT_APP_API_TOKEN || ''
         },
         body: JSON.stringify(profileData)
       });
