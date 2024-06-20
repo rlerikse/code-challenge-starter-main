@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import { Profile } from "./profileUtils";
+import { Profile } from "../profile/profileUtils";
 
 type ProfileLineItemArgs = {
   profile: Profile;

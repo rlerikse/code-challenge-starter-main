@@ -1,41 +1,23 @@
-import { ProfileList } from './features/profile/ProfileList';
-import { Box } from '@mui/material';
-import { Status } from './features/profile/Status';
+import React from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import ProfileList from './features/components/ProfileList';
+import ProfileShow from './features/pages/ProfileShow';
+import EditProfile from './features/pages/EditProfile';
+import './App.css';
 
-function App() {
-
-  function handleClickAdd() {
-    alert('Should add another profile!')
-  }
-
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header" style={{textAlign: 'center'}}>
-        <Box>
-          <Box sx={{   boxSizing: 'border-box', width: '32em', padding: '.5em', margin: '0 auto', maxWidth: '100%', position: 'absolute', left: 0, right: 0 }}>
-            <Box sx={{ border: '1px solid gray',
-                       backgroundColor: 'white', 
-                       padding: '.5em', 
-                       width: '1em', 
-                       height: '1em', 
-                       float: 'right', 
-                       borderRadius: '4px',
-                       cursor: 'pointer',
-                       lineHeight: '1.2em'
-                      }}
-                 onClick={()=>handleClickAdd()}>
-              ➕
-            </Box>
-          </Box>
-          <h1>Welcome to Rivet</h1>
-        </Box>
-        <Box sx={{width: '32em', boxSizing: 'border-box', padding: '.5em', margin: '0 auto', maxWidth: '100%'}}>
-          <ProfileList></ProfileList>
-        </Box>
-        <Status></Status>
-      </header>
-    </div>
+    <BrowserRouter>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<ProfileList />} />
+          <Route path="/profile/:id" element={<ProfileShow />} />
+          <Route path="/create" element={<EditProfile />} />
+          <Route path="/edit/:id" element={<EditProfile />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;

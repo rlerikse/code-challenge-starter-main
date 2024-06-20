@@ -1,71 +1,103 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { ProfileState, makeFakeUserList } from './profileUtils'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { isArray } from 'lodash'
 
-const initialState = {
+interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  photo: string;
+  notes: string;
+}
+
+interface ProfileState {
+  profiles: Profile[];
+  activeProfile: Profile | null;
+}
+
+const initialState: ProfileState = {
   profiles: [],
-  inFocus: null
-} as ProfileState;
+  activeProfile: null,
+};
 
-function returnFakeProfiles() {
-  const profiles = makeFakeUserList();
-  console.log('got some [fake] data', profiles);
-  return profiles;
-}
-
-async function returnNetworkProfiles() {
-  const profiles = await fetch("https://codechallenge.rivet.work/api/v1/profile/1", {
+export const fetchProfiles = createAsyncThunk('profiles/fetchProfiles', async (_, thunkAPI) => {
+  const response = await fetch('https://codechallenge.rivet.work/api/v1/profiles', {
     headers: {
-      "token": process.env.REACT_APP_API_TOKEN || ''
-    }
-  })
-  .then((response) => response.json())
-  .then((data) => {
-    // do something with the data
-    return data;
-  })
+      token: 'YOUR_ACCESS_TOKEN',
+    },
+  });
+  return (await response.json()) as Profile[];
+});
 
-  console.log('got some data', profiles);
-  if (isArray(profiles)) {
-    return profiles;
-  }
-  return [profiles]
-}
+export const fetchProfileById = createAsyncThunk('profiles/fetchProfileById', async (id: string, thunkAPI) => {
+  const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile/${id}`, {
+    headers: {
+      token: 'YOUR_ACCESS_TOKEN',
+    },
+  });
+  return (await response.json()) as Profile;
+});
 
+export const createProfile = createAsyncThunk('profiles/createProfile', async (profile: Profile, thunkAPI) => {
+  const response = await fetch('https://codechallenge.rivet.work/api/v1/profile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      token: 'YOUR_ACCESS_TOKEN',
+    },
+    body: JSON.stringify(profile),
+  });
+  return (await response.json()) as Profile;
+});
 
-export const fetchProfiles = createAsyncThunk('users/fetchUsers', () => {
-  // return returnFakeProfiles();
-  return returnNetworkProfiles();
-})
+export const updateProfile = createAsyncThunk('profiles/updateProfile', async (profile: Profile, thunkAPI) => {
+  const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile/${profile.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      token: 'YOUR_ACCESS_TOKEN',
+    },
+    body: JSON.stringify(profile),
+  });
+  return (await response.json()) as Profile;
+});
 
-export const profileSlice = createSlice({
+const profileSlice = createSlice({
   name: 'profiles',
   initialState,
   reducers: {
     setActiveProfile: (state, action) => {
-      const id = action.payload;
-      console.log('should set active profile ID', action.payload);
-      
-      const found = state.profiles.find((item)=>item.id==id);
-      state.inFocus = found || null;
-      // state.settings.customTopics.topicsSortType.name = action.payload.name;   
+      state.activeProfile = action.payload;
     },
   },
-  extraReducers(builder) {
-    builder.addCase(fetchProfiles.fulfilled, (state, action) => {
-      return {
-        ...state,
-        profiles: action.payload
-      }
-    })
-  }
-})
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchProfiles.fulfilled, (state, action) => {
+        state.profiles = action.payload;
+      })
+      .addCase(fetchProfileById.fulfilled, (state, action) => {
+        state.activeProfile = action.payload;
+      })
+      .addCase(createProfile.fulfilled, (state, action) => {
+        state.profiles.push(action.payload);
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        const index = state.profiles.findIndex(profile => profile.id === action.payload.id);
+        if (index !== -1) {
+          state.profiles[index] = action.payload;
+        }
+      });
+  },
+});
 
-// Action creators are generated for each case reducer function
-export const { setActiveProfile } = profileSlice.actions
-export const profileList = (state: RootState) => state.profile.profiles;
-export const countProfiles = (state: RootState) => state.profile.profiles.length as number;
-export const currentProfile = (state: RootState) => state.profile.inFocus;
+export const { setActiveProfile } = profileSlice.actions;
 
-export default profileSlice.reducer
+export const profileList = (state: RootState) => state.profiles.profiles;
+export const currentProfile = (state: RootState) => state.profiles.activeProfile;
+
+export default profileSlice.reducer;
