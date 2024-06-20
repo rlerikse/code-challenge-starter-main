@@ -73,6 +73,7 @@ export const createProfile = createAsyncThunk(
       const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           "token": process.env.REACT_APP_API_TOKEN || ''
         },
         body: JSON.stringify(profileData)
@@ -100,6 +101,7 @@ export const updateProfile = createAsyncThunk(
       const response = await fetch(`https://codechallenge.rivet.work/api/v1/profile/${profileId}`, {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           "token": process.env.REACT_APP_API_TOKEN || ''
         },
         body: JSON.stringify(profileData)
